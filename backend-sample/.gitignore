@@ -1,0 +1,13 @@
+vendor/
+.idea/
+*.swp
+
+# binary
+backend-sample
+main
+
+# mac
+.DS_Store
+
+# vs code ide
+.vscode/settings.json

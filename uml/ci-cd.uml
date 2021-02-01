@@ -1,0 +1,45 @@
+@startuml
+actor developer
+artifact github {
+  file code
+  component Action {
+  }
+  code -> Action
+}
+
+developer -do(0)-> github
+
+hexagon merger {
+}
+
+
+cloud AWS {
+	component imageBuild {
+	}
+	
+	database imageRepo {
+	}
+	hexagon trigger {
+	}
+	frame test {
+	}
+        stack dev {
+        }
+        stack stable {
+        }
+        stack staging {
+        }    
+        stack prod {
+        }
+}
+
+github -> merger
+merger -> AWS
+imageBuild -> imageRepo
+imageRepo -> trigger
+trigger -> test
+test -> dev
+dev -> stable
+stable -> staging
+staging -> prod
+@enduml

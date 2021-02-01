@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jumpbox
+  labels:
+    app: jumpbox
+spec:
+  selector:
+    matchLabels:
+      name: jumpbox
+  template:
+    metadata:
+      labels:
+        name: jumpbox
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: jumpbox
+        image: ubuntu:latest
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "while true; do sleep 60; done;" ]

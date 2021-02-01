@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-dashboard
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: sample-dashboard
+  template:
+    metadata:
+      labels:
+        app: sample-dashboard
+    spec:
+      containers:
+      - name: sample-backend
+        image: sample-backend
+        args: ["-server_type=dashboard"]
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: env-configmap
+          - secretRef:
+              name: exchange-secret-v1
+        ports:
+        - containerPort: 9091
+          name: dashboard
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi

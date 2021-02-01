@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sample-backend-integration
+spec:
+  parallelism: 1
+  activeDeadlineSeconds: 120
+  ttlSecondsAfterFinished: 1800
+  template:
+    metadata:
+      name: sample-backend-integration
+    spec:
+      containers:
+      - name: sample-backend-integration-test
+        image: aws-test-account.dkr.ecr.us-west-2.amazonaws.com/sample-backend:dev
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_ADDR
+          value: "sample-backend-dev:9090"
+        envFrom:
+        - configMapRef:
+            name: env-configmap-dev
+        - secretRef:
+            name: exchange-secret-v1
+        args:
+        - -client=true
+        - -client_type=sample-client
+        - -server_type=sample-backend
+      # Do not restart containers after they exit
+      restartPolicy: Never
+  # of retries before marking as failed.
+  backoffLimit: 0

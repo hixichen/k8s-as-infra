@@ -1,0 +1,35 @@
+@startuml
+
+!include <awslib/AWSCommon>
+
+!include <awslib/Compute/EC2>
+!include <awslib/Database/DynamoDB>
+!include <awslib/Storage/S3Bucket>
+!include <awslib/Analytics/Kinesis>
+!include <awslib/Analytics/KinesisDataFirehose>
+!include <awslib/Analytics/Athena>
+
+left to right direction
+agent "Published Event" as event #fff
+
+cloud AWS {
+  Kinesis(raw, "raw", "raw event")
+  EC2(dispatch, "dispatch", "Dispath raw data to partioned stream")
+  Kinesis(partition, "partiton", "partitioned data")
+  EC2(processor, "processor", "process data")
+  KinesisDataFirehose(firehose, "loader", "load streaming data into data lakes")
+  S3Bucket(s3, "Persistent",  "Parition by Date")
+  Athena(athena, "SQL", "interactive query with schema")
+  DynamoDB(db, "kv", "Batch Related info")
+}
+
+event --> raw
+raw --> partition
+partition --> firehose
+firehose --> s3
+athena -left-> s3
+dispatch -left-> raw
+processor -left-> partition
+processor -right-> db
+
+@enduml

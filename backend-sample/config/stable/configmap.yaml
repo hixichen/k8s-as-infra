@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-configmap
+data:
+  TGC_PREFIX: "SAMPLE_"
+  SAMPLE_ENV: "stable"
+  SAMPLE_LOG_FILE: "/var/log/sample_backend.log"
+  SAMPLE_MIGRATIONS_DIR: "/migrations"
+  SAMPLE_DB_STMT_TIMEOUT: "10"
+  SAMPLE_DB_NUM_CONNS: "1000"
+  SAMPLE_DB_URL: "postgres://postgres:scccc@stablemazonaws.com:5432/postgres"
+  TOKEN_EXPIRATION: "24h"

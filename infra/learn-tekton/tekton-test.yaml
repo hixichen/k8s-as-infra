@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: say-hello
+spec:
+  inputs:
+    params:
+    - name: who
+      description: who to say hello
+      default: kitty
+  steps:
+  - name: say hello
+    image: alpine
+    command:
+    - /bin/echo
+    args:
+    - "Hello ${inputs.params.who}"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: demo-pipeline
+spec:
+  tasks:
+  - name: say-hello-world
+    taskRef:
+      name: say-hello
+    params:
+    - name: who
+      value: world
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: demo-pipeline-run-1
+spec:
+  pipelineRef:
+    name: demo-pipeline
+  serviceAccount: 'default'

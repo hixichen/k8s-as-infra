@@ -1,0 +1,32 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME --role-arn $ROLE_ARN
+      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - export REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+  build:
+    commands:
+      - echo apply config to cluster on `date`
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/${CLUSTER_VERSION}/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - |
+        if [ "$CURRENT_STAGE" = "dev" ] ; then
+           ./kubectl replace --force -k config/$CURRENT_STAGE
+           sleep 30
+           echo Run integeretion test on dev `date`
+           ./kubectl replace --force -f config/test/$CURRENT_STAGE/backend.yaml -n $CURRENT_STAGE
+           ./kubectl wait --for=condition=complete --timeout=120s job/backend-sample-integration -n $CURRENT_STAGE
+           sleep 10
+           ./kubectl replace --force -f config/test/$CURRENT_STAGE/dashboard.yaml -n $CURRENT_STAGE
+           ./kubectl wait --for=condition=complete --timeout=120s job/sample-dashboard-integration -n $CURRENT_STAGE
+        else
+           ./kubectl apply -k config/$CURRENT_STAGE
+           ./kubectl set image deploy -l image=backend-sample backend-sample=$REPO:$CODEBUILD_RESOLVED_SOURCE_VERSION -n $CURRENT_STAGE
+        fi
+      - echo Pushing the Docker image...
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - docker pull $REPO:${CURRENT_STAGE}
+      - docker tag  $REPO:$CURRENT_STAGE $REPO:$NEXT_STAGE 
+      - docker push $REPO:$NEXT_STAGE

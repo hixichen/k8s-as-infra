@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sample-dashboard-integration
+spec:
+  parallelism: 1
+  activeDeadlineSeconds: 120
+  ttlSecondsAfterFinished: 1800
+  template:
+    metadata:
+      name: sample-dashboard-integration
+    spec:
+      containers:
+      - name: sample-dashboard-integration-test
+        image: aws-test-account.dkr.ecr.us-west-2.amazonaws.com/sample-backend:dev
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_ADDR
+          value: "sample-dashboard-dev:9091"
+        envFrom:
+        - configMapRef:
+            name: env-configmap-dev
+        - secretRef:
+            name: exchange-secret-v1
+        args:
+        - -client=true
+        - -client_type=dashboard-client
+        - -server_type=dashboard
+      # Do not restart containers after they exit
+      restartPolicy: Never
+  # of retries before marking as failed.
+  backoffLimit: 0

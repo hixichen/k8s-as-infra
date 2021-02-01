@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jumpbox
+spec:
+  containers:
+  - name: jumpbox
+    image: ubuntu
+    imagePullPolicy: Always
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+    envFrom:
+    - configMapRef:
+        name: env-configmap-dev
+    - secretRef:
+        name: exchange-secret-v1
